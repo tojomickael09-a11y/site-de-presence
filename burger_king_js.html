@@ -8,11 +8,13 @@
     <style>
         /* --- CSS (STYLE) --- */
         :root {
-            --primary: #D62300;
-            --dark: #121212;
-            --dark-card: #1E1E1E;
-            --light: #F4F4F4;
-            --gray: #AAAAAA;
+            --gold: #D4AF37;      /* Or (Vanille/Luxe) */
+            --ruby: #8a1c27;      /* Rouge profond (Rubis/Terre) */
+            --emerald: #0b4d2e;   /* Vert profond (Forêt/Ravinala) */
+            --dark: #0a0a0a;      /* Noir absolu */
+            --dark-card: #141414; /* Noir carte */
+            --light: #EAEAEA;     /* Blanc cassé */
+            --gray: #888888;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -20,27 +22,45 @@
         body {
             font-family: 'Montserrat', sans-serif;
             background-color: var(--dark);
+            background-image: radial-gradient(circle at top right, rgba(9, 9, 7, 0.1), transparent 40%),
+                              radial-gradient(circle at bottom left, rgba(11, 77, 46, 0.15), transparent 40%);
             color: var(--light);
             line-height: 1.6;
         }
 
-        h1, h2, h3 { font-family: 'Oswald', sans-serif; text-transform: uppercase; }
+        h1, h2, h3 { 
+            font-family: 'Oswald', sans-serif; 
+            text-transform: uppercase; 
+            letter-spacing: 2px; /* Espacement luxe */
+        }
 
         header {
-            background: rgba(18, 18, 18, 0.95);
+            background: rgba(10, 10, 10, 0.8);
             padding: 20px 40px;
             position: sticky; top: 0; z-index: 100;
             display: flex; justify-content: space-between; align-items: center;
-            border-bottom: 1px solid #333;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.2); /* Bordure dorée subtile */
             backdrop-filter: blur(10px);
         }
 
-        .logo { font-size: 24px; font-weight: bold; color: var(--primary); letter-spacing: 2px; }
-        .logo span { color: white; }
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
 
-        .cart-icon { position: relative; cursor: pointer; font-weight: bold; user-select: none; }
+        .logo { font-size: 24px; font-weight: bold; color: var(--light); letter-spacing: 4px; display: flex; align-items: center; gap: 10px; }
+        .logo span { color: var(--gold); } 
+        .flag-icon { 
+            height: 24px; border: 1px solid #fff; 
+            transition: transform 0.3s ease-in-out;
+        }
+        .logo:hover .flag-icon { transform: scale(1.2) rotate(5deg); }
+        #auth-container a, #user-display a { color: var(--gold); text-decoration: none; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; }
+
+        .cart-icon { position: relative; cursor: pointer; font-weight: bold; user-select: none; color: var(--light); letter-spacing: 1px; }
         .badge {
-            background: var(--primary); color: white;
+            background: var(--ruby); color: white;
             border-radius: 50%; padding: 2px 8px; font-size: 12px;
             position: absolute; top: -10px; right: -15px;
             display: none; /* Caché par défaut */
@@ -52,88 +72,200 @@
             background-size: cover; background-position: center;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
             text-align: center;
+            border-bottom: 1px solid var(--gold);
         }
-        .hero h1 { font-size: 4rem; margin-bottom: 10px; text-shadow: 0 5px 15px rgba(0,0,0,0.5); }
-        .hero p { font-size: 1.5rem; color: var(--gray); }
+        .hero h1 { font-size: 4rem; margin-bottom: 10px; color: var(--light); text-shadow: 0 2px 10px rgba(0,0,0,0.8); }
+        .hero p { font-size: 1.2rem; color: var(--gold); text-transform: uppercase; letter-spacing: 3px; margin-bottom: 30px; }
         .btn-cta {
-            margin-top: 20px; padding: 15px 40px;
-            background: var(--primary); color: white;
-            text-decoration: none; font-weight: bold; border-radius: 50px;
-            transition: transform 0.3s, box-shadow 0.3s;
+            padding: 15px 50px;
+            background: transparent; color: var(--gold); 
+            border: 1px solid var(--gold);
+            text-decoration: none; font-weight: bold; text-transform: uppercase; letter-spacing: 2px;
+            transition: all 0.4s ease;
         }
-        .btn-cta:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(214, 35, 0, 0.4); }
+        .btn-cta:hover { background: var(--gold); color: var(--dark); box-shadow: 0 0 20px rgba(212, 175, 55, 0.3); }
 
         .container { max-width: 1200px; margin: 0 auto; padding: 40px 20px; }
         .section-title {
-            font-size: 2.5rem; margin: 40px 0 20px; 
-            border-left: 5px solid var(--primary); padding-left: 15px;
+            font-size: 2rem; margin: 60px 0 30px; color: var(--light);
+            border-bottom: 1px solid var(--emerald); display: inline-block; padding-bottom: 10px;
         }
 
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; }
 
         .card {
+            position: relative;
             background: var(--dark-card); border-radius: 15px; overflow: hidden;
-            transition: transform 0.3s; border: 1px solid #333;
+            transition: all 0.4s ease;
+            border: 1px solid rgba(255,255,255,0.05);
             display: flex; flex-direction: column;
+            /* Initial state for scroll animation */
+            opacity: 0;
+            transform: translateY(30px);
         }
-        .card:hover { transform: translateY(-5px); border-color: var(--primary); }
-
+        .card.is-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .card:hover { 
+            transform: translateY(-5px); border-color: var(--gold); 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
         .card-img {
-            height: 200px; background: #2a2a2a;
+            height: 200px; background: radial-gradient(circle, #2a2a2a, #141414);
             display: flex; justify-content: center; align-items: center; font-size: 80px;
+            filter: drop-shadow(0 10px 10px rgba(0,0,0,0.5));
+        }
+
+        .card-animation {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 1.5rem;
+            opacity: 0.8;
+            z-index: 1;
         }
 
         .card-body { padding: 20px; flex-grow: 1; display: flex; flex-direction: column; }
-        .card-title { font-size: 1.4rem; margin-bottom: 10px; display: flex; justify-content: space-between; }
-        .price { color: var(--primary); }
-        .card-desc { color: var(--gray); font-size: 0.9rem; margin-bottom: 20px; flex-grow: 1; }
+        .card-title { font-size: 1.2rem; margin-bottom: 10px; display: flex; justify-content: space-between; font-family: 'Oswald', sans-serif; letter-spacing: 1px; }
+        .price { color: var(--gold); font-weight: bold; }
+        .card-desc { color: var(--gray); font-size: 0.9rem; margin-bottom: 15px; flex-grow: 1; }
 
         .btn-add {
             width: 100%; padding: 12px;
-            background: transparent; border: 2px solid var(--light); color: var(--light);
-            font-weight: bold; cursor: pointer; transition: 0.3s;
-            text-transform: uppercase; font-family: 'Oswald', sans-serif;
+            background: var(--emerald); border: none; color: white;
+            font-weight: bold; cursor: pointer; transition: 0.3s; letter-spacing: 1px;
+            text-transform: uppercase; font-family: 'Oswald', sans-serif; border-radius: 4px;
         }
-        .btn-add:hover { background: var(--light); color: var(--dark); }
+        .btn-add:hover { background: var(--gold); color: var(--dark); }
 
         .cart-panel {
             position: fixed; bottom: 20px; right: 20px;
-            background: var(--light); color: var(--dark);
+            background: rgba(20, 20, 20, 0.95); color: var(--light);
             width: 350px; padding: 20px; border-radius: 10px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+            border: 1px solid var(--gold);
+            backdrop-filter: blur(10px);
             z-index: 200;
             display: none; /* Caché par défaut en JS */
             animation: slideIn 0.5s;
         }
         @keyframes slideIn { from { transform: translateY(100px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-        .cart-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--dark); padding-bottom: 10px; margin-bottom: 10px; }
+        .cart-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--gray); padding-bottom: 10px; margin-bottom: 10px; }
+        .cart-header h3 { color: var(--gold); font-size: 1rem; }
         .cart-item { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9rem; }
-        .cart-total { font-size: 1.2rem; font-weight: bold; margin-top: 15px; text-align: right; color: var(--primary); }
-        
-        .btn-clear { background: #333; color: white; border: none; padding: 5px 10px; cursor: pointer; }
+        .cart-total { font-size: 1.2rem; font-weight: bold; margin-top: 15px; text-align: right; color: var(--gold); }
+        .cart-discount { color: var(--emerald); font-weight: bold; }
+
+        .btn-clear { background: transparent; color: var(--gray); border: 1px solid var(--gray); padding: 5px 10px; cursor: pointer; border-radius: 3px; font-size: 0.7rem; text-transform: uppercase; }
+        .btn-clear:hover { border-color: var(--ruby); color: var(--ruby); }
         .btn-checkout {
-            display: block; width: 100%; background: var(--primary); color: white;
+            display: block; width: 100%; background: var(--gold); color: var(--dark);
             text-align: center; padding: 15px; margin-top: 15px; text-decoration: none; font-weight: bold;
+            border-radius: 2px; text-transform: uppercase; letter-spacing: 1px;
+            transition: background 0.3s;
+        }
+        .btn-checkout:hover { background: white; }
+
+        /* Modal Styles */
+        .modal {
+            display: none; position: fixed; z-index: 300; left: 0; top: 0;
+            width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.7);
+            animation: fadeIn 0.3s;
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .modal-content {
+            background-color: var(--dark-card); margin: 10% auto; padding: 30px;
+            border: 1px solid #888; width: 80%; max-width: 400px; border-radius: 10px;
+            position: relative;
+            animation: slideDown 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        @keyframes slideDown {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        .close-btn {
+            color: #aaa; position: absolute; top: 10px; right: 20px;
+            font-size: 28px; font-weight: bold; cursor: pointer;
+        }
+        .modal form { display: flex; flex-direction: column; gap: 15px; margin-top: 20px; }
+        .modal input, .modal select {
+            padding: 15px; background: #1a1a1a; border: 1px solid #333;
+            color: var(--light); border-radius: 5px; font-size: 1rem; font-family: 'Montserrat', sans-serif;
+        }
+        /* Style pour le placeholder du select */
+        .modal select:invalid {
+            color: var(--gray);
+        }
+        .modal option {
+            background: var(--dark-card);
+            color: var(--light);
+        }
+        .modal button {
+            padding: 15px; background: var(--gold); color: var(--dark);
+            border: none; cursor: pointer; font-weight: bold; text-transform: uppercase; border-radius: 0; letter-spacing: 1px;
         }
 
-        footer { text-align: center; padding: 40px; color: var(--gray); font-size: 0.8rem; margin-top: 50px; border-top: 1px solid #333; }
+        footer { 
+            text-align: center; padding: 40px; color: var(--gray); 
+            font-size: 0.8rem; margin-top: 50px; border-top: 1px solid rgba(212, 175, 55, 0.1); 
+            overflow: hidden; /* Pour s'assurer que la vache ne dépasse pas */
+            text-transform: uppercase; letter-spacing: 2px;
+        }
+
+        /* --- DASHBOARD ADMIN STYLES --- */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 40px; }
+        .stat-card { background: var(--dark-card); padding: 20px; border: 1px solid var(--gold); border-radius: 2px; text-align: center; transition: transform 0.3s; }
+        .stat-card:hover { transform: translateY(-5px); box-shadow: 0 5px 15px rgba(212, 175, 55, 0.1); }
+        .stat-card h3 { font-size: 0.8rem; color: var(--gray); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; }
+        .stat-card p { font-size: 2rem; color: var(--light); font-weight: bold; font-family: 'Oswald', sans-serif; }
+        
+        .dashboard-row { display: grid; grid-template-columns: 2fr 1fr; gap: 30px; margin-bottom: 40px; }
+        .chart-container { background: var(--dark-card); padding: 20px; border-radius: 2px; border: 1px solid rgba(255,255,255,0.05); min-height: 300px; }
+        
+        .data-table { width: 100%; border-collapse: collapse; margin-top: 20px; color: var(--gray); font-size: 0.9rem; }
+        .data-table th { text-align: left; padding: 15px; border-bottom: 1px solid var(--gold); color: var(--gold); text-transform: uppercase; font-size: 0.8rem; }
+        .data-table td { padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .tag { padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; text-transform: uppercase; font-weight: bold; }
+        .tag-vip { background: var(--gold); color: var(--dark); }
+        .tag-new { background: var(--emerald); color: white; }
+
+        @media (max-width: 768px) { .dashboard-row { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
 
     <header>
-        <div class="logo">KING <span>BURGER</span></div>
-        <div class="cart-icon" onclick="toggleCart()">
-            PANIER
-            <span class="badge" id="cart-badge">0</span>
+        <div class="logo">
+            GASY <span>BURGER</span>
+            <img src="https://upload.wikimedia.org/wikipedia/commons/b/bc/Flag_of_Madagascar.svg" alt="Drapeau Madagascar" class="flag-icon">
+        </div>
+        <div class="header-right">
+            <div id="auth-container">
+                <a href="#" id="login-link">Connexion</a> / <a href="#" id="register-link">Inscription</a>
+            </div>
+            <div id="user-display" style="display:none;">
+                <span id="username-display" style="color:var(--gold); font-weight:bold;"></span> | <a href="#" id="profile-link">Mon Profil</a> | <a href="#" id="logout-link">Déconnexion</a>
+            </div>
+            <div class="cart-icon">
+                PANIER
+                <span class="badge" id="cart-badge">0</span>
+            </div>
         </div>
     </header>
 
-    <section class="hero">
-        <h1>Le Goût du Feu</h1>
-        <p>Version Frontend (HTML/CSS/JS)</p>
-        <a href="#menu" class="btn-cta">COMMANDER</a>
+    <section class="hero" id="hero-section">
+        <h1>Le Goût du Pays</h1>
+        <p>Ny Tsiron'ny Gasy | Édition Prestige</p>
+        <a href="#menu" class="btn-cta">MANAFATRA (COMMANDER)</a>
+        <button id="gift-card-btn" class="btn-cta" style="margin-top: 15px; border-color: var(--ruby); color: var(--ruby);">Cadeau (Fanomezana)</button>
     </section>
 
     <div class="container" id="menu">
@@ -146,19 +278,125 @@
 
         <h2 class="section-title">Boissons</h2>
         <div class="grid" id="grid-drinks"></div>
+
+        <h2 class="section-title">Desserts</h2>
+        <div class="grid" id="grid-desserts"></div>
+    </div>
+
+    <!-- DASHBOARD GÉRANT (Caché par défaut) -->
+    <div class="container" id="admin-dashboard" style="display:none;">
+        <h2 class="section-title">Tableau de Bord Gérant</h2>
+        
+        <!-- Stats Row -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Chiffre d'Affaires (Total)</h3>
+                <p id="stat-revenue">0.00€</p>
+            </div>
+            <div class="stat-card">
+                <h3>Commandes Totales</h3>
+                <p id="stat-orders">0</p>
+            </div>
+            <div class="stat-card">
+                <h3>Clients Actifs</h3>
+                <p id="stat-clients">0</p>
+            </div>
+            <div class="stat-card">
+                <h3>Panier Moyen</h3>
+                <p id="stat-avg-cart">0.00€</p>
+            </div>
+        </div>
+
+        <!-- Graph & Actions -->
+        <div class="dashboard-row">
+            <div class="chart-container">
+                <h3 style="color:var(--gold); margin-bottom:15px;">Évolution des Ventes (7 derniers jours)</h3>
+                <canvas id="salesChart" width="600" height="300" style="width:100%; height:100%;"></canvas>
+            </div>
+            <div class="actions-container" style="display:flex; flex-direction:column; gap:15px;">
+                <h3 style="color:var(--gold);">Actions Rapides</h3>
+                <button class="btn-cta" onclick="exportOrdersCSV()" style="width:100%; font-size:0.9rem;">📥 Exporter Comptabilité (CSV)</button>
+                <button class="btn-cta" onclick="seedDummyData()" style="width:100%; font-size:0.9rem; border-color:var(--gray); color:var(--gray);">🔄 Générer Données Test</button>
+                <button class="btn-cta" onclick="factoryReset()" style="width:100%; font-size:0.9rem; border-color:var(--ruby); color:var(--ruby);">⚠️ Réinitialiser Base de Données</button>
+            </div>
+        </div>
+
+        <!-- Client List -->
+        <h3 class="section-title" style="font-size: 1.5rem; margin-top: 20px;">Derniers Clients & Profils</h3>
+        <div class="table-responsive">
+            <table class="data-table" id="clients-table">
+                <thead>
+                    <tr>
+                        <th>Client</th>
+                        <th>Dernière Commande</th>
+                        <th>Total Dépensé</th>
+                        <th>Statut</th>
+                    </tr>
+                </thead>
+                <tbody id="clients-table-body">
+                    <!-- Rempli par JS -->
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <div class="cart-panel" id="cart-panel">
         <div class="cart-header">
             <h3>Votre Commande</h3>
-            <button class="btn-clear" onclick="clearCart()">Vider</button>
+            <button class="btn-clear" id="clear-cart-btn">Vider</button>
         </div>
         <div id="cart-items-container"></div>
+        <div id="cart-summary" style="text-align: right; margin-top: 15px; border-top: 1px solid var(--gray); padding-top: 10px;">
+            <div class="cart-subtotal" id="cart-subtotal">SOUS-TOTAL : 0.00€</div>
+            <div class="cart-discount" id="cart-discount" style="display:none;"></div>
+        </div>
         <div class="cart-total" id="cart-total">TOTAL : 0.00€</div>
-        <a href="#" class="btn-checkout" onclick="checkout()">VALIDER</a>
+        <a href="#" class="btn-checkout" id="checkout-btn">VALIDER</a>
     </div>
 
-    <footer>&copy; 2024 KING BURGER. Frontend JS.</footer>
+    <!-- Modals for Login/Registration -->
+    <div id="login-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" data-modal="login-modal">&times;</span>
+            <h2>Connexion</h2>
+            <form id="login-form">
+                <input type="text" name="username" placeholder="Nom d'utilisateur" required>
+                <input type="password" name="password" placeholder="Mot de passe" required>
+                <button type="submit">Se connecter</button>
+            </form>
+        </div>
+    </div>
+    <div id="register-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" data-modal="register-modal">&times;</span>
+            <h2>Inscription</h2>
+            <form id="register-form">
+                <input type="text" name="username" placeholder="Nom d'utilisateur" required>
+                <input type="password" name="password" placeholder="Mot de passe" required>
+                <input type="number" name="age" placeholder="Âge" required min="1">
+                <input type="date" name="birthdate" required title="Date de naissance">
+                <select name="gender" required>
+                    <option value="" disabled selected>Votre sexe</option>
+                    <option value="homme">Homme</option>
+                    <option value="femme">Femme</option>
+                </select>
+                <button type="submit">S'inscrire</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Profil Utilisateur -->
+    <div id="profile-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" data-modal="profile-modal">&times;</span>
+            <h2>Mon Profil</h2>
+            <div id="profile-content" style="color: var(--light); margin-top: 20px;"></div>
+        </div>
+    </div>
+
+    <footer>
+        &copy; 2024 GASY BURGER. Frontend JS.
+    </footer>
 
     <script>
         // --- JAVASCRIPT (LOGIQUE) ---
@@ -168,35 +406,93 @@
             burgers: [
                 { id: 1, name: 'Le Smoky King', price: 12.50, desc: 'Double bœuf Angus, cheddar affiné, sauce barbecue.', img: '🍔' },
                 { id: 2, name: 'Truffle Deluxe', price: 14.00, desc: 'Steak haché minute, sauce à la truffe noire.', img: '🥓' },
-                { id: 3, name: 'Spicy Chicken', price: 11.90, desc: 'Poulet pané maison, jalapeños, sauce sriracha.', img: '🍗' }
+                { id: 3, name: 'Spicy Chicken', price: 11.90, desc: 'Poulet pané maison, jalapeños, sauce sriracha.', img: '🍗' },
+                { id: 8, name: 'Le Gasy', price: 15.00, desc: 'Steak de zébu, sauce rougail, achards de légumes.', img: '🇲🇬' },
+                { id: 9, name: 'Le Végé King', price: 12.00, desc: 'Galette de légumes, avocat, sauce secrète.', img: '🥑' },
+                { id: 10, name: 'Le T-Rex', price: 18.00, desc: 'Triple steak, triple cheddar, double bacon.', img: '🦖' }
             ],
             sides: [
                 { id: 4, name: 'Frites Rustiques', price: 4.50, desc: 'Pommes de terre coupées au couteau.', img: '🍟' },
-                { id: 5, name: 'Onion Rings', price: 5.00, desc: 'Oignons doux frits dans une pâte à la bière.', img: '🧅' }
+                { id: 5, name: 'Onion Rings', price: 5.00, desc: 'Oignons doux frits dans une pâte à la bière.', img: '🧅' },
+                { id: 11, name: 'Frites de Patate Douce', price: 5.50, desc: 'Patates douces croustillantes et fondantes.', img: '🍠' },
+                { id: 12, name: 'Mofo Gasy', price: 3.00, desc: 'Petits pains de riz sucrés, spécialité malgache.', img: '🥞' },
+                { id: 13, name: 'Salade Fraîcheur', price: 6.00, desc: 'Salade verte, tomates, concombres, vinaigrette.', img: '🥗' }
             ],
             drinks: [
                 { id: 6, name: 'Cola Craft', price: 3.50, desc: 'Cola artisanal aux épices naturelles.', img: '🥤' },
-                { id: 7, name: 'Limonade Maison', price: 4.00, desc: 'Citrons pressés, menthe fraîche.', img: '🍋' }
+                { id: 7, name: 'Limonade Maison', price: 4.00, desc: 'Citrons pressés, menthe fraîche.', img: '🍋' },
+                { id: 14, name: 'Jus de Baobab', price: 4.50, desc: 'Jus exotique et riche en vitamines.', img: '🌳' },
+                { id: 15, name: 'Bière THB', price: 5.00, desc: 'La bière blonde emblématique de Madagascar.', img: '🍺' }
+            ],
+            desserts: [
+                { id: 16, name: 'Koba Ravina', price: 6.50, desc: 'Gâteau de riz, pistaches et banane, cuit à la vapeur.', img: '🥮' },
+                { id: 17, name: 'Mousse au Chocolat', price: 5.50, desc: 'Mousse onctueuse au chocolat noir de Madagascar.', img: '🍫' }
             ]
         };
 
-        // État du panier
+        // 2. État de l'application
         let cart = {};
+        let currentUser = null;
+        let isAdmin = false;
+        const GIFT_CARD_CODE = "PROMO10";
+        const GIFT_CARD_VALUE = 5.00;
 
-        // 2. Initialisation
-        window.onload = function() {
+        // 3. Initialisation au chargement de la page
+        document.addEventListener('DOMContentLoaded', () => {
+            // Rendu des produits
             renderGrid('burgers', 'grid-burgers');
             renderGrid('sides', 'grid-sides');
             renderGrid('drinks', 'grid-drinks');
-        };
+            renderGrid('desserts', 'grid-desserts');
 
-        // 3. Fonctions d'affichage
+            // Vérification de la session utilisateur
+            checkUserSession();
+
+            // Ajout des écouteurs d'événements
+            setupEventListeners();
+
+            // Mise à jour de l'interface du panier (au cas où des données sont en cache)
+            updateCartUI();
+
+            // Animation au défilement
+            setupScrollAnimations();
+        });
+
+
+        // --- NOUVEAU : Logique d'animation au défilement ---
+        function setupScrollAnimations() {
+            const options = {
+                root: null, // par rapport au viewport
+                rootMargin: '0px',
+                threshold: 0.1 // se déclenche quand 10% de l'élément est visible
+            };
+
+            const observer = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('is-visible');
+                        observer.unobserve(entry.target); // On n'anime qu'une seule fois
+                    }
+                });
+            }, options);
+
+            // Observer toutes les cartes avec un délai décalé
+            document.querySelectorAll('.card').forEach((card, index) => {
+                card.style.transitionDelay = `${index * 100}ms`;
+                observer.observe(card);
+            });
+        }
+        // 4. Fonctions d'affichage
         function renderGrid(category, elementId) {
             const container = document.getElementById(elementId);
+            if (!container) return;
+
             menuData[category].forEach(item => {
+                const animatedEmoji = getAnimatedEmoji(item);
                 const card = document.createElement('div');
                 card.className = 'card';
                 card.innerHTML = `
+                    ${animatedEmoji ? `<div class="card-animation">${animatedEmoji}</div>` : ''}
                     <div class="card-img">${item.img}</div>
                     <div class="card-body">
                         <div class="card-title">
@@ -204,20 +500,48 @@
                             <span class="price">${item.price.toFixed(2)}€</span>
                         </div>
                         <p class="card-desc">${item.desc}</p>
-                        <button class="btn-add" onclick="addToCart(${item.id}, '${category}')">Ajouter</button>
+                        <button class="btn-add" data-id="${item.id}" data-category="${category}">Ajouter</button>
                     </div>
                 `;
                 container.appendChild(card);
             });
         }
 
-        // 4. Logique du Panier
+        function getAnimatedEmoji(item) {
+            const id = item.id;
+            switch(id) {
+                // Burgers
+                case 1: return '🔥'; // Smoky King -> Natsu, etc.
+                case 2: return '👑'; // Truffle Deluxe -> Roi
+                case 3: return '👺'; // Spicy Chicken -> Masque Tengu (Demon Slayer)
+                case 8: return '🏴‍☠️'; // Le Gasy -> One Piece
+                case 9: return '🍃'; // Le Végé King -> Konoha (Naruto)
+                case 10: return '🐉'; // T-Rex -> Dragon Ball
+                // Accompagnements
+                case 4: return '⚔️'; // Frites -> Attaque des Titans
+                case 5: return '🍥'; // Onion Rings -> Naruto
+                case 11: return '⚡'; // Frites Patate Douce -> Pikachu
+                case 12: return '🍙'; // Mofo Gasy -> Onigiri
+                case 13: return '🌸'; // Salade Fraîcheur -> Sakura
+                // Boissons
+                case 6: return '🧪'; // Cola Craft -> Dr. Stone
+                case 7: return '☀️'; // Limonade Maison -> Escanor
+                case 14: return '👒'; // Jus de Baobab -> Luffy
+                case 15: return '🍶'; // Bière THB -> Saké
+                // Desserts
+                case 16: return '🐙'; // Koba Ravina -> Koro-sensei
+                case 17: return '🍰'; // Mousse au Chocolat -> Gâteau
+                default:
+                    return null;
+            }
+        }
+        // 5. Logique du Panier
         function addToCart(id, category) {
             if (cart[id]) {
                 cart[id].qty++;
             } else {
                 // Trouver l'objet dans les données
-                const item = menuData[category].find(i => i.id === id);
+                const item = menuData[category].find(i => i.id == id);
                 cart[id] = { ...item, qty: 1 };
             }
             updateCartUI();
@@ -227,15 +551,18 @@
             const panel = document.getElementById('cart-panel');
             const container = document.getElementById('cart-items-container');
             const badge = document.getElementById('cart-badge');
+            const subTotalEl = document.getElementById('cart-subtotal');
+            const discountEl = document.getElementById('cart-discount');
             const totalEl = document.getElementById('cart-total');
             
             container.innerHTML = '';
-            let total = 0;
+            let subTotal = 0;
             let count = 0;
+            let discount = 0;
 
             for (const id in cart) {
                 const item = cart[id];
-                total += item.price * item.qty;
+                subTotal += item.price * item.qty;
                 count += item.qty;
 
                 const div = document.createElement('div');
@@ -244,6 +571,20 @@
                 container.appendChild(div);
             }
 
+            // Appliquer la carte cadeau si l'utilisateur en a une
+            const userGiftCards = JSON.parse(localStorage.getItem('kingBurgerGiftCards')) || {};
+            if (currentUser && userGiftCards[currentUser] && subTotal > 0) {
+                discount = GIFT_CARD_VALUE;
+                discountEl.innerText = `REMISE CARTE CADEAU : -${discount.toFixed(2)}€`;
+                discountEl.style.display = 'block';
+            } else {
+                discountEl.style.display = 'none';
+            }
+
+            let total = subTotal - discount;
+            if (total < 0) total = 0;
+
+            subTotalEl.innerText = 'SOUS-TOTAL : ' + subTotal.toFixed(2) + '€';
             totalEl.innerText = 'TOTAL : ' + total.toFixed(2) + '€';
             
             if (count > 0) {
@@ -263,14 +604,367 @@
 
         function toggleCart() {
             const panel = document.getElementById('cart-panel');
-            if (Object.keys(cart).length > 0) {
+            // On peut toujours afficher/cacher le panier, même vide.
+            if (panel) {
                 panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
             }
         }
 
         function checkout() {
+            if (Object.keys(cart).length === 0) {
+                alert('Votre panier est vide.');
+                return;
+            }
+
+            // Gérer la carte cadeau
+            const userGiftCards = JSON.parse(localStorage.getItem('kingBurgerGiftCards')) || {};
+            if (currentUser && userGiftCards[currentUser]) {
+                delete userGiftCards[currentUser];
+                localStorage.setItem('kingBurgerGiftCards', JSON.stringify(userGiftCards));
+            }
+            
+            // --- SAUVEGARDE DE LA COMMANDE (POUR LE GÉRANT) ---
+            const orders = JSON.parse(localStorage.getItem('kingBurgerOrders')) || [];
+            const total = parseFloat(document.getElementById('cart-total').innerText.replace('TOTAL : ', '').replace('€', ''));
+            orders.push({
+                id: Date.now(),
+                date: new Date().toISOString(),
+                user: currentUser || 'Invité',
+                items: cart,
+                total: total
+            });
+            localStorage.setItem('kingBurgerOrders', JSON.stringify(orders));
+            // --------------------------------------------------
+
             alert('Commande validée ! Merci.');
             clearCart();
+        }
+
+        // 6. Logique d'authentification et utilisateur
+        function checkUserSession() {
+            const loggedInUser = sessionStorage.getItem('kingBurgerCurrentUser');
+            if (loggedInUser) {
+                currentUser = loggedInUser;
+                isAdmin = (currentUser === 'admin'); // Simple check admin
+                updateUserUI(true);
+            } else {
+                updateUserUI(false);
+            }
+        }
+
+        function updateUserUI(isLoggedIn) {
+            const authContainer = document.getElementById('auth-container');
+            const userDisplay = document.getElementById('user-display');
+            const usernameDisplay = document.getElementById('username-display');
+
+            if (isLoggedIn) {
+                authContainer.style.display = 'none';
+                userDisplay.style.display = 'block';
+                usernameDisplay.innerText = currentUser;
+            } else {
+                authContainer.style.display = 'block';
+                userDisplay.style.display = 'none';
+                usernameDisplay.innerText = '';
+            }
+
+            // Gestion de l'affichage Admin vs Client
+            const adminDashboard = document.getElementById('admin-dashboard');
+            const menuSection = document.getElementById('menu');
+            const heroSection = document.getElementById('hero-section');
+
+            if (isAdmin) {
+                adminDashboard.style.display = 'block';
+                menuSection.style.display = 'none';
+                heroSection.style.display = 'none';
+                renderAdminDashboard();
+            } else {
+                adminDashboard.style.display = 'none';
+                menuSection.style.display = 'block';
+                heroSection.style.display = 'flex';
+            }
+
+            updateCartUI(); // Mettre à jour le panier pour appliquer/retirer la remise
+        }
+
+        function handleRegister(e) {
+            e.preventDefault();
+            const username = e.target.username.value;
+            const password = e.target.password.value;
+            const age = e.target.age.value;
+            const birthdate = e.target.birthdate.value;
+            const gender = e.target.gender.value;
+            let users = JSON.parse(localStorage.getItem('kingBurgerUsers')) || [];
+
+            if (users.find(user => user.username === username)) {
+                alert('Ce nom d\'utilisateur existe déjà.');
+                return;
+            }
+
+            users.push({ username, password, age, birthdate, gender });
+            localStorage.setItem('kingBurgerUsers', JSON.stringify(users));
+            alert('Inscription réussie ! Vous pouvez maintenant vous connecter.');
+            closeModal('register-modal');
+            openModal('login-modal');
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const username = e.target.username.value;
+            const password = e.target.password.value;
+            
+            // --- ACCÈS GÉRANT (Backdoor Admin) ---
+            if (username === 'admin' && password === 'admin') {
+                currentUser = 'admin';
+                sessionStorage.setItem('kingBurgerCurrentUser', 'admin');
+                isAdmin = true;
+                updateUserUI(true);
+                closeModal('login-modal');
+                return;
+            }
+
+            const users = JSON.parse(localStorage.getItem('kingBurgerUsers')) || [];
+
+            const user = users.find(u => u.username === username && u.password === password);
+
+            if (user) {
+                currentUser = user.username;
+                sessionStorage.setItem('kingBurgerCurrentUser', user.username);
+                isAdmin = (user.username === 'admin');
+                updateUserUI(true);
+                closeModal('login-modal');
+            } else {
+                alert('Nom d\'utilisateur ou mot de passe incorrect.');
+            }
+        }
+
+        function handleLogout() {
+            currentUser = null;
+            sessionStorage.removeItem('kingBurgerCurrentUser');
+            updateUserUI(false);
+        }
+
+        // 7. Logique Carte Cadeau
+        function promptForGiftCard() {
+            if (!currentUser) {
+                alert("Vous devez être connecté pour utiliser une carte cadeau.");
+                openModal('login-modal');
+                return;
+            }
+
+            const code = prompt(`Entrez votre code de carte cadeau (indice: ${GIFT_CARD_CODE})`);
+            if (code === GIFT_CARD_CODE) {
+                let userGiftCards = JSON.parse(localStorage.getItem('kingBurgerGiftCards')) || {};
+                if (userGiftCards[currentUser]) {
+                    alert("Vous avez déjà une carte cadeau active.");
+                } else {
+                    userGiftCards[currentUser] = { code: GIFT_CARD_CODE, value: GIFT_CARD_VALUE };
+                    localStorage.setItem('kingBurgerGiftCards', JSON.stringify(userGiftCards));
+                    alert(`Carte cadeau de ${GIFT_CARD_VALUE.toFixed(2)}€ ajoutée à votre compte !`);
+                    updateCartUI();
+                }
+            } else if (code) {
+                alert("Code de carte cadeau invalide.");
+            }
+        }
+
+        // --- 10. FONCTIONNALITÉS GÉRANT (ADMIN) ---
+
+        function renderAdminDashboard() {
+            const orders = JSON.parse(localStorage.getItem('kingBurgerOrders')) || [];
+            const users = JSON.parse(localStorage.getItem('kingBurgerUsers')) || [];
+
+            // 1. Calcul des Stats
+            const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0);
+            const totalOrders = orders.length;
+            const uniqueClients = new Set(orders.map(o => o.user)).size;
+            const avgCart = totalOrders > 0 ? (totalRevenue / totalOrders) : 0;
+
+            document.getElementById('stat-revenue').innerText = totalRevenue.toFixed(2) + '€';
+            document.getElementById('stat-orders').innerText = totalOrders;
+            document.getElementById('stat-clients').innerText = uniqueClients;
+            document.getElementById('stat-avg-cart').innerText = avgCart.toFixed(2) + '€';
+
+            // 2. Tableau des Clients
+            const tbody = document.getElementById('clients-table-body');
+            tbody.innerHTML = '';
+            
+            // Grouper les commandes par utilisateur
+            const clientStats = {};
+            orders.forEach(order => {
+                if(!clientStats[order.user]) clientStats[order.user] = { total: 0, lastOrder: null, count: 0 };
+                clientStats[order.user].total += order.total;
+                clientStats[order.user].count += 1;
+                clientStats[order.user].lastOrder = order.date;
+            });
+
+            // Afficher les utilisateurs enregistrés + invités
+            const allClients = [...new Set([...users.map(u => u.username), ...Object.keys(clientStats)])];
+
+            allClients.forEach(clientName => {
+                const stats = clientStats[clientName] || { total: 0, lastOrder: 'Aucune', count: 0 };
+                const isVip = stats.total > 100;
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td style="font-weight:bold; color:var(--light);">${clientName}</td>
+                    <td>${stats.lastOrder !== 'Aucune' ? new Date(stats.lastOrder).toLocaleDateString() : '-'}</td>
+                    <td>${stats.total.toFixed(2)}€</td>
+                    <td>${isVip ? '<span class="tag tag-vip">VIP Gold</span>' : '<span class="tag tag-new">Standard</span>'}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            // 3. Graphique des Ventes (Canvas)
+            drawSalesChart(orders);
+        }
+
+        function drawSalesChart(orders) {
+            const canvas = document.getElementById('salesChart');
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width;
+            const height = canvas.height;
+
+            // Préparer les données (7 derniers jours)
+            const days = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
+            const today = new Date();
+            const dataPoints = [];
+            
+            for(let i=6; i>=0; i--) {
+                const d = new Date();
+                d.setDate(today.getDate() - i);
+                const dateStr = d.toISOString().split('T')[0];
+                
+                // Somme des ventes pour ce jour
+                const dailyTotal = orders
+                    .filter(o => o.date.startsWith(dateStr))
+                    .reduce((sum, o) => sum + o.total, 0);
+                
+                dataPoints.push({ day: days[d.getDay()], value: dailyTotal });
+            }
+
+            // Dessiner
+            ctx.clearRect(0, 0, width, height);
+            
+            // Lignes de fond
+            ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+            ctx.beginPath();
+            for(let i=1; i<5; i++) {
+                const y = height - (i * (height/5));
+                ctx.moveTo(40, y); ctx.lineTo(width, y);
+            }
+            ctx.stroke();
+
+            // Tracer la courbe
+            const maxVal = Math.max(...dataPoints.map(d => d.value), 10); // Échelle min 10
+            const stepX = (width - 60) / 6;
+            
+            ctx.beginPath();
+            ctx.strokeStyle = '#D4AF37'; // Or
+            ctx.lineWidth = 3;
+            
+            dataPoints.forEach((point, index) => {
+                const x = 50 + (index * stepX);
+                const y = height - 30 - ((point.value / maxVal) * (height - 60));
+                if(index === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+                
+                // Points
+                ctx.fillStyle = '#D4AF37';
+                ctx.fillRect(x-3, y-3, 6, 6);
+                
+                // Labels X
+                ctx.fillStyle = '#888';
+                ctx.font = '12px Arial';
+                ctx.fillText(point.day, x-10, height - 10);
+            });
+            ctx.stroke();
+        }
+
+        // Fonction "Carte Blanche" : Export CSV
+        window.exportOrdersCSV = function() {
+            const orders = JSON.parse(localStorage.getItem('kingBurgerOrders')) || [];
+            let csvContent = "data:text/csv;charset=utf-8,ID,Date,Client,Total\n";
+            orders.forEach(o => {
+                csvContent += `${o.id},${o.date},${o.user},${o.total}\n`;
+            });
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "comptabilite_gasy_burger.csv");
+            document.body.appendChild(link);
+            link.click();
+        }
+
+        // Fonction utilitaire pour générer des fausses données (pour tester le graph)
+        window.seedDummyData = function() {
+            const dummyOrders = [];
+            for(let i=0; i<20; i++) {
+                const date = new Date();
+                date.setDate(date.getDate() - Math.floor(Math.random() * 7));
+                dummyOrders.push({
+                    id: Date.now() + i,
+                    date: date.toISOString(),
+                    user: Math.random() > 0.5 ? 'admin' : 'Invité',
+                    total: Math.floor(Math.random() * 50) + 10,
+                    items: {}
+                });
+            }
+            localStorage.setItem('kingBurgerOrders', JSON.stringify(dummyOrders));
+            renderAdminDashboard();
+        }
+
+        // Fonction pour effacer la base de données locale (Factory Reset)
+        window.factoryReset = function() {
+            if(confirm("ATTENTION : Vous allez effacer TOUTES les commandes et TOUS les utilisateurs inscrits.\n\nVoulez-vous vraiment remettre la base de données à zéro ?")) {
+                localStorage.removeItem('kingBurgerOrders');
+                localStorage.removeItem('kingBurgerUsers');
+                localStorage.removeItem('kingBurgerGiftCards');
+                alert("Base de données effacée avec succès.");
+                location.reload();
+            }
+        }
+
+        // 8. Gestion des Modals
+        function openModal(modalId) { document.getElementById(modalId).style.display = 'block'; }
+        function closeModal(modalId) { document.getElementById(modalId).style.display = 'none'; }
+
+        // 9. Centralisation des écouteurs d'événements
+        function setupEventListeners() {
+            document.querySelector('.cart-icon').addEventListener('click', toggleCart);
+            document.getElementById('clear-cart-btn').addEventListener('click', clearCart);
+            document.getElementById('checkout-btn').addEventListener('click', checkout);
+            document.getElementById('login-link').addEventListener('click', () => openModal('login-modal'));
+            document.getElementById('register-link').addEventListener('click', () => openModal('register-modal'));
+            document.getElementById('logout-link').addEventListener('click', handleLogout);
+            
+            // Profil
+            document.getElementById('profile-link').addEventListener('click', () => {
+                const users = JSON.parse(localStorage.getItem('kingBurgerUsers')) || [];
+                const user = users.find(u => u.username === currentUser);
+                const content = document.getElementById('profile-content');
+                if(user) {
+                    content.innerHTML = `<p><strong>Nom:</strong> ${user.username}</p><p><strong>Âge:</strong> ${user.age}</p><p><strong>Sexe:</strong> ${user.gender}</p>`;
+                } else {
+                    content.innerHTML = "<p>Profil administrateur ou invité.</p>";
+                }
+                openModal('profile-modal');
+            });
+
+            document.getElementById('gift-card-btn').addEventListener('click', promptForGiftCard);
+
+            document.getElementById('login-form').addEventListener('submit', handleLogin);
+            document.getElementById('register-form').addEventListener('submit', handleRegister);
+
+            document.querySelectorAll('.close-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => closeModal(e.target.dataset.modal));
+            });
+
+            // Event delegation for "Add to cart" buttons
+            document.getElementById('menu').addEventListener('click', (e) => {
+                if (e.target && e.target.classList.contains('btn-add')) {
+                    const { id, category } = e.target.dataset;
+                    addToCart(id, category);
+                }
+            });
         }
     </script>
 </body>
