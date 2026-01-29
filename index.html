@@ -574,7 +574,7 @@
             // Appliquer la carte cadeau si l'utilisateur en a une
             const userGiftCards = JSON.parse(localStorage.getItem('kingBurgerGiftCards')) || {};
             if (currentUser && userGiftCards[currentUser] && subTotal > 0) {
-                discount = GIFT_CARD_VALUE;
+                discount = userGiftCards[currentUser].value || GIFT_CARD_VALUE;
                 discountEl.innerText = `REMISE CARTE CADEAU : -${discount.toFixed(2)}€`;
                 discountEl.style.display = 'block';
             } else {
@@ -746,25 +746,50 @@
         // 7. Logique Carte Cadeau
         function promptForGiftCard() {
             if (!currentUser) {
-                alert("Vous devez être connecté pour utiliser une carte cadeau.");
+                alert("Vous devez être connecté pour vérifier votre fidélité.");
                 openModal('login-modal');
                 return;
             }
 
-            const code = prompt(`Entrez votre code de carte cadeau (indice: ${GIFT_CARD_CODE})`);
-            if (code === GIFT_CARD_CODE) {
-                let userGiftCards = JSON.parse(localStorage.getItem('kingBurgerGiftCards')) || {};
-                if (userGiftCards[currentUser]) {
-                    alert("Vous avez déjà une carte cadeau active.");
-                } else {
-                    userGiftCards[currentUser] = { code: GIFT_CARD_CODE, value: GIFT_CARD_VALUE };
-                    localStorage.setItem('kingBurgerGiftCards', JSON.stringify(userGiftCards));
-                    alert(`Carte cadeau de ${GIFT_CARD_VALUE.toFixed(2)}€ ajoutée à votre compte !`);
-                    updateCartUI();
+            // Calcul des stats client (Plats commandés et Total dépensé)
+            const orders = JSON.parse(localStorage.getItem('kingBurgerOrders')) || [];
+            const userOrders = orders.filter(o => o.user === currentUser);
+            
+            let totalDishes = 0;
+            let totalSpent = 0;
+
+            userOrders.forEach(order => {
+                totalSpent += order.total;
+                if (order.items) {
+                    Object.values(order.items).forEach(item => totalDishes += item.qty);
                 }
-            } else if (code) {
-                alert("Code de carte cadeau invalide.");
+            });
+
+            let msg = `--- STATUT FIDÉLITÉ ---\n\n`;
+            msg += `👤 Client : ${currentUser}\n`;
+            msg += `🍔 Plats commandés : ${totalDishes}\n`;
+            msg += `💰 Total achats : ${totalSpent.toFixed(2)}€\n`;
+
+            if (totalSpent > 100) {
+                let userGiftCards = JSON.parse(localStorage.getItem('kingBurgerGiftCards')) || {};
+                
+                // Si le client n'a pas déjà une carte active
+                if (!userGiftCards[currentUser]) {
+                    userGiftCards[currentUser] = { code: 'LOYALTY20', value: 20.00 };
+                    localStorage.setItem('kingBurgerGiftCards', JSON.stringify(userGiftCards));
+                    msg += "\n🎉 FÉLICITATIONS ! 🎉\n";
+                    msg += "Vous avez dépassé 100€ d'achats.\n";
+                    msg += "La maison vous offre un bon de réduction de 20€ sur votre prochaine commande !";
+                    updateCartUI();
+                } else {
+                    msg += "\n✅ Vous avez déjà un bon de réduction actif.";
+                }
+            } else {
+                const remaining = 100 - totalSpent;
+                msg += `\nIl vous manque ${remaining.toFixed(2)}€ pour gagner un bon de 20€ !`;
             }
+            
+            alert(msg);
         }
 
         // --- 10. FONCTIONNALITÉS GÉRANT (ADMIN) ---
