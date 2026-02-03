@@ -256,7 +256,8 @@
         }
         .social-divider span { background: var(--dark-card); padding: 0 10px; position: relative; z-index: 1; color: var(--gray); font-size: 0.8rem; }
         .social-buttons { display: flex; gap: 10px; justify-content: center; }
-        .btn-social { flex: 1; padding: 10px; border: none; border-radius: 4px; color: white; cursor: pointer; font-size: 0.9rem; transition: 0.3s; }
+        .btn-social { flex: 1; padding: 10px; border: none; border-radius: 4px; color: white; cursor: pointer; font-size: 0.9rem; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn-social svg { width: 18px; height: 18px; fill: currentColor; }
         .btn-fb { background: #3b5998; }
         .btn-google { background: #db4437; }
         .btn-twitter { background: #1da1f2; }
@@ -442,9 +443,18 @@
                 <button type="submit">Se connecter</button>
                 <div class="social-divider"><span>OU VIA</span></div>
                 <div class="social-buttons">
-                    <button type="button" class="btn-social btn-fb">Facebook</button>
-                    <button type="button" class="btn-social btn-google">Google</button>
-                    <button type="button" class="btn-social btn-twitter">Twitter</button>
+                    <button type="button" class="btn-social btn-fb">
+                        <svg viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
+                        Facebook
+                    </button>
+                    <button type="button" class="btn-social btn-google">
+                        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5.46 10.75h-5.46v2.5h3.13c-.28 1.48-1.57 2.5-3.13 2.5-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5c.93 0 1.78.34 2.44.91l1.86-1.86C14.86 8.34 13.51 7.5 12 7.5c-2.48 0-4.5 2.02-4.5 4.5s2.02 4.5 4.5 4.5c2.29 0 4.16-1.68 4.46-3.75z"></path></svg>
+                        Google
+                    </button>
+                    <button type="button" class="btn-social btn-twitter">
+                        <svg viewBox="0 0 24 24"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path></svg>
+                        Twitter
+                    </button>
                 </div>
             </form>
         </div>
@@ -466,9 +476,18 @@
                 <button type="submit">S'inscrire</button>
                 <div class="social-divider"><span>OU VIA</span></div>
                 <div class="social-buttons">
-                    <button type="button" class="btn-social btn-fb">Facebook</button>
-                    <button type="button" class="btn-social btn-google">Google</button>
-                    <button type="button" class="btn-social btn-twitter">Twitter</button>
+                    <button type="button" class="btn-social btn-fb">
+                        <svg viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
+                        Facebook
+                    </button>
+                    <button type="button" class="btn-social btn-google">
+                        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5.46 10.75h-5.46v2.5h3.13c-.28 1.48-1.57 2.5-3.13 2.5-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5c.93 0 1.78.34 2.44.91l1.86-1.86C14.86 8.34 13.51 7.5 12 7.5c-2.48 0-4.5 2.02-4.5 4.5s2.02 4.5 4.5 4.5c2.29 0 4.16-1.68 4.46-3.75z"></path></svg>
+                        Google
+                    </button>
+                    <button type="button" class="btn-social btn-twitter">
+                        <svg viewBox="0 0 24 24"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path></svg>
+                        Twitter
+                    </button>
                 </div>
             </form>
         </div>
