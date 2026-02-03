@@ -237,6 +237,30 @@
         .tag-vip { background: var(--gold); color: var(--dark); }
         .tag-new { background: var(--emerald); color: white; }
 
+        /* --- PAYMENT & SOCIAL --- */
+        .payment-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
+        .payment-option {
+            background: var(--dark); border: 1px solid var(--gray);
+            padding: 15px; text-align: center; cursor: pointer;
+            border-radius: 5px; transition: 0.3s;
+            display: flex; flex-direction: column; align-items: center; gap: 10px;
+        }
+        .payment-option:hover { border-color: var(--gold); background: rgba(212, 175, 55, 0.1); }
+        .payment-option.selected { border-color: var(--gold); background: var(--gold); color: var(--dark); }
+        .payment-icon { font-size: 24px; }
+        
+        .social-divider { text-align: center; margin: 20px 0; position: relative; }
+        .social-divider::before {
+            content: ''; position: absolute; top: 50%; left: 0; right: 0;
+            height: 1px; background: var(--gray); opacity: 0.3; z-index: 0;
+        }
+        .social-divider span { background: var(--dark-card); padding: 0 10px; position: relative; z-index: 1; color: var(--gray); font-size: 0.8rem; }
+        .social-buttons { display: flex; gap: 10px; justify-content: center; }
+        .btn-social { flex: 1; padding: 10px; border: none; border-radius: 4px; color: white; cursor: pointer; font-size: 0.9rem; transition: 0.3s; }
+        .btn-fb { background: #3b5998; }
+        .btn-google { background: #db4437; }
+        .btn-twitter { background: #1da1f2; }
+
         /* --- RESPONSIVE DESIGN (POUR MOBILE) --- */
         @media (max-width: 768px) {
             body {
@@ -416,6 +440,12 @@
                 <input type="text" name="username" placeholder="Nom d'utilisateur" required>
                 <input type="password" name="password" placeholder="Mot de passe" required>
                 <button type="submit">Se connecter</button>
+                <div class="social-divider"><span>OU VIA</span></div>
+                <div class="social-buttons">
+                    <button type="button" class="btn-social btn-fb">Facebook</button>
+                    <button type="button" class="btn-social btn-google">Google</button>
+                    <button type="button" class="btn-social btn-twitter">Twitter</button>
+                </div>
             </form>
         </div>
     </div>
@@ -434,6 +464,12 @@
                     <option value="femme">Femme</option>
                 </select>
                 <button type="submit">S'inscrire</button>
+                <div class="social-divider"><span>OU VIA</span></div>
+                <div class="social-buttons">
+                    <button type="button" class="btn-social btn-fb">Facebook</button>
+                    <button type="button" class="btn-social btn-google">Google</button>
+                    <button type="button" class="btn-social btn-twitter">Twitter</button>
+                </div>
             </form>
         </div>
     </div>
@@ -447,8 +483,37 @@
         </div>
     </div>
 
+    <!-- Modal Paiement -->
+    <div id="payment-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" data-modal="payment-modal">&times;</span>
+            <h2>Paiement</h2>
+            <p style="color:var(--gray); font-size:0.9rem;">Montant à régler : <span id="payment-amount" style="color:var(--gold); font-weight:bold;"></span></p>
+            
+            <div class="payment-grid">
+                <div class="payment-option" onclick="selectPayment('mvola', this)">
+                    <span class="payment-icon">🟡</span> Mvola
+                </div>
+                <div class="payment-option" onclick="selectPayment('orange', this)">
+                    <span class="payment-icon">🟠</span> Orange Money
+                </div>
+                <div class="payment-option" onclick="selectPayment('airtel', this)">
+                    <span class="payment-icon">🔴</span> Airtel Money
+                </div>
+                <div class="payment-option" onclick="selectPayment('visa', this)">
+                    <span class="payment-icon">💳</span> Visa / MC
+                </div>
+            </div>
+            
+            <div id="payment-details" style="margin-top:20px; display:none;">
+                <input type="text" id="payment-input" placeholder="Numéro de téléphone" style="width:100%; padding:10px; margin-bottom:10px;">
+                <button onclick="finalizeOrder()" style="width:100%;">CONFIRMER LA COMMANDE</button>
+            </div>
+        </div>
+    </div>
+
     <footer>
-        &copy; 2024 GASY BURGER. Frontend JS.
+        &copy; 2026 GASY BURGER.
     </footer>
 
     <script>
@@ -489,6 +554,7 @@
         let isAdmin = false;
         const GIFT_CARD_CODE = "PROMO10";
         const GIFT_CARD_VALUE = 5.00;
+        let selectedPaymentMethod = null;
 
         // 3. Initialisation au chargement de la page
         document.addEventListener('DOMContentLoaded', () => {
@@ -668,6 +734,28 @@
                 alert('Votre panier est vide.');
                 return;
             }
+            // Ouvrir le modal de paiement
+            const totalText = document.getElementById('cart-total').innerText.replace('TOTAL : ', '');
+            document.getElementById('payment-amount').innerText = totalText;
+            openModal('payment-modal');
+        }
+
+        window.selectPayment = function(method, elem) {
+            selectedPaymentMethod = method;
+            // UI Update
+            document.querySelectorAll('.payment-option').forEach(el => el.classList.remove('selected'));
+            elem.classList.add('selected');
+            
+            const details = document.getElementById('payment-details');
+            const input = document.getElementById('payment-input');
+            details.style.display = 'block';
+            
+            if(method === 'visa') input.placeholder = "Numéro de carte (16 chiffres)";
+            else input.placeholder = "Numéro mobile (ex: 034...)";
+        }
+
+        window.finalizeOrder = function() {
+            if(!selectedPaymentMethod) return;
 
             // Gérer la carte cadeau
             const userGiftCards = JSON.parse(localStorage.getItem('kingBurgerGiftCards')) || {};
@@ -684,12 +772,14 @@
                 date: new Date().toISOString(),
                 user: currentUser || 'Invité',
                 items: cart,
-                total: total
+                total: total,
+                payment: selectedPaymentMethod
             });
             localStorage.setItem('kingBurgerOrders', JSON.stringify(orders));
             // --------------------------------------------------
 
-            alert('Commande validée ! Merci.');
+            alert('Paiement accepté via ' + selectedPaymentMethod.toUpperCase() + '. Commande validée ! Merci.');
+            closeModal('payment-modal');
             clearCart();
         }
 
@@ -1034,6 +1124,10 @@
 
             document.querySelectorAll('.close-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => closeModal(e.target.dataset.modal));
+            });
+            
+            document.querySelectorAll('.btn-social').forEach(btn => {
+                btn.addEventListener('click', () => alert("Connexion sociale simulée pour la démo."));
             });
 
             // Event delegation for "Add to cart" buttons
