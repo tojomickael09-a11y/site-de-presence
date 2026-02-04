@@ -2,14 +2,16 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Mon Emploi du Temps</title>
+    <title>Emploi du Temps - L1 Informatique</title>
     <style>
         body { 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
             background-color: #f4f4f4; 
+            color: #333;
             padding: 20px; 
         }
-        h1 { color: #333; text-align: center; }
+        h1 { color: #005a9e; text-align: center; }
+        h2 { color: #555; text-align: center; font-weight: normal; margin-top: -15px; }
         table { 
             width: 100%; 
             border-collapse: collapse; 
@@ -22,45 +24,69 @@
             border: 1px solid #ddd; 
             text-align: center; 
         }
-        th { background-color: #007BFF; color: white; }
+        th { background-color: #005a9e; color: white; }
         /* Style pour la première colonne (les heures) */
         td:first-child { 
             font-weight: bold; 
             background-color: #e9ecef; 
             color: #555;
         }
-        tr:hover { background-color: #f1f1f1; }
+        /* Couleurs par type de cours */
+        .cours-cm { background-color: #d1e7dd; color: #0f5132; font-weight: bold; } /* Vert */
+        .cours-td { background-color: #cff4fc; color: #055160; } /* Bleu clair */
+        .cours-tp { background-color: #fff3cd; color: #664d03; } /* Jaune */
+        .cours-pause { background-color: #f8f9fa; color: #6c757d; font-style: italic; } /* Gris */
     </style>
 </head>
 <body>
 
-    <h1>Mon Emploi du Temps de la Semaine</h1>
+    <h1>Emploi du Temps</h1>
+    <h2>Licence 1 - Informatique</h2>
 
     <?php
-    // 1. Définition des jours et des créneaux horaires
+    // 1. Définition des jours et des créneaux universitaires
     $jours = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi"];
-    $creneaux = ["08h - 10h", "10h - 12h", "12h - 14h", "14h - 16h", "16h - 18h"];
+    $creneaux = [
+        "08:00 - 09:30",
+        "09:45 - 11:15",
+        "11:30 - 13:00",
+        "13:00 - 14:00", // Pause déjeuner
+        "14:00 - 15:30",
+        "15:45 - 17:15"
+    ];
 
-    // 2. Remplissage des données (Tableau multidimensionnel : Heure => [Jour => Matière])
+    // 2. Planning type pour une L1 Informatique
     $planning = [
-        "08h - 10h" => [
-            "Lundi" => "Mathématiques", "Mardi" => "Anglais", "Mercredi" => "Histoire", "Jeudi" => "Mathématiques", "Vendredi" => "Sport"
+        "08:00 - 09:30" => [
+            "Lundi" => "Algo 1 (CM)", "Mardi" => "Analyse 1 (CM)", "Mercredi" => "", "Jeudi" => "Archi 1 (CM)", "Vendredi" => "Algo 1 (TP)"
         ],
-        "10h - 12h" => [
-            "Lundi" => "Physique", "Mardi" => "Français", "Mercredi" => "SVT", "Jeudi" => "Anglais", "Vendredi" => "Philo"
+        "09:45 - 11:15" => [
+            "Lundi" => "Algo 1 (TD)", "Mardi" => "Analyse 1 (TD)", "Mercredi" => "Anglais (TD)", "Jeudi" => "Archi 1 (TD)", "Vendredi" => "Algo 1 (TP)"
         ],
-        "12h - 14h" => [
-            "Lundi" => "Pause", "Mardi" => "Pause", "Mercredi" => "Pause", "Jeudi" => "Pause", "Vendredi" => "Pause"
+        "11:30 - 13:00" => [
+            "Lundi" => "Algèbre 1 (CM)", "Mardi" => "", "Mercredi" => "Méthodologie", "Jeudi" => "SE 1 (CM)", "Vendredi" => ""
         ],
-        "14h - 16h" => [
-            "Lundi" => "Informatique", "Mardi" => "Sport", "Mercredi" => "Libre", "Jeudi" => "Physique", "Vendredi" => "Informatique"
+        "13:00 - 14:00" => [
+            "Lundi" => "PAUSE", "Mardi" => "PAUSE", "Mercredi" => "PAUSE", "Jeudi" => "PAUSE", "Vendredi" => "PAUSE"
         ],
-        "16h - 18h" => [
-            "Lundi" => "Étude", "Mardi" => "Libre", "Mercredi" => "Libre", "Jeudi" => "SVT", "Vendredi" => "Sortie"
+        "14:00 - 15:30" => [
+            "Lundi" => "Algèbre 1 (TD)", "Mardi" => "SE 1 (TP)", "Mercredi" => "", "Jeudi" => "SE 1 (TD)", "Vendredi" => "Projet Tutoré"
+        ],
+        "15:45 - 17:15" => [
+            "Lundi" => "", "Mardi" => "SE 1 (TP)", "Mercredi" => "", "Jeudi" => "", "Vendredi" => "Projet Tutoré"
         ]
     ];
 
-    // 3. Affichage du tableau HTML
+    // 3. Fonction pour déterminer la classe CSS en fonction du cours
+    function getCoursClass($cours) {
+        if (strpos($cours, 'PAUSE') !== false) return 'cours-pause';
+        if (strpos($cours, '(CM)') !== false) return 'cours-cm';
+        if (strpos($cours, '(TD)') !== false) return 'cours-td';
+        if (strpos($cours, '(TP)') !== false) return 'cours-tp';
+        return '';
+    }
+
+    // 4. Affichage du tableau HTML
     echo "<table>";
     
     // En-tête du tableau (Les jours)
@@ -78,8 +104,9 @@
         
         foreach ($jours as $jour) {
             // On récupère le cours s'il existe, sinon on met vide
-            $cours = isset($planning[$heure][$jour]) ? $planning[$heure][$jour] : "";
-            echo "<td>$cours</td>";
+            $cours = $planning[$heure][$jour] ?? "";
+            $class = getCoursClass($cours);
+            echo "<td class='$class'>$cours</td>";
         }
         echo "</tr>";
     }

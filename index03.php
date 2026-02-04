@@ -14,32 +14,36 @@ if (!isset($_SESSION[$SESSION_KEY])) {
     $_SESSION[$SESSION_KEY] = array_fill_keys($eleves, "Absent");
 }
 
-// 3. Traitement des actions (changement de statut)
-if (isset($_GET['action']) && isset($_GET['eleve'])) {
-    $eleve_a_modifier = $_GET['eleve'];
-    $nouvel_etat = $_GET['action'];
-
-    if (array_key_exists($eleve_a_modifier, $_SESSION[$SESSION_KEY]) && in_array($nouvel_etat, ['present', 'absent'])) {
-        $_SESSION[$SESSION_KEY][$eleve_a_modifier] = ($nouvel_etat == 'present') ? "Présent" : "Absent";
-    }
-    header("Location: " . $_SERVER['PHP_SELF']);
-    exit;
-}
-
-// 4. Action de réinitialisation
-if (isset($_GET['reset'])) {
-    $_SESSION[$SESSION_KEY] = array_fill_keys($eleves, "Absent");
-    header("Location: " . $_SERVER['PHP_SELF']);
-    exit;
-}
-
-// 5. Calculs pour l'affichage et le graphe
+// 3. Calculs pour l'affichage et le graphe
 $statuts = $_SESSION[$SESSION_KEY];
 $comptes = array_count_values($statuts);
 $presents = $comptes['Présent'] ?? 0;
 $absents = $comptes['Absent'] ?? 0;
 $total = count($eleves);
 $taux_presence = ($total > 0) ? round(($presents / $total) * 100) : 0;
+
+// --- LOGIQUE EMPLOI DU TEMPS ---
+$jours = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi"];
+$creneaux = [
+    "08:00 - 09:30", "09:45 - 11:15", "11:30 - 13:00",
+    "13:00 - 14:00", // Pause
+    "14:00 - 15:30", "15:45 - 17:15"
+];
+$planning = [
+    "08:00 - 09:30" => ["Lundi" => "Algo 1 (CM)", "Mardi" => "Analyse 1 (CM)", "Mercredi" => "", "Jeudi" => "Archi 1 (CM)", "Vendredi" => "Algo 1 (TP)"],
+    "09:45 - 11:15" => ["Lundi" => "Algo 1 (TD)", "Mardi" => "Analyse 1 (TD)", "Mercredi" => "Anglais (TD)", "Jeudi" => "Archi 1 (TD)", "Vendredi" => "Algo 1 (TP)"],
+    "11:30 - 13:00" => ["Lundi" => "Algèbre 1 (CM)", "Mardi" => "", "Mercredi" => "Méthodologie", "Jeudi" => "SE 1 (CM)", "Vendredi" => ""],
+    "13:00 - 14:00" => ["Lundi" => "PAUSE", "Mardi" => "PAUSE", "Mercredi" => "PAUSE", "Jeudi" => "PAUSE", "Vendredi" => "PAUSE"],
+    "14:00 - 15:30" => ["Lundi" => "Algèbre 1 (TD)", "Mardi" => "SE 1 (TP)", "Mercredi" => "", "Jeudi" => "SE 1 (TD)", "Vendredi" => "Projet Tutoré"],
+    "15:45 - 17:15" => ["Lundi" => "", "Mardi" => "SE 1 (TP)", "Mercredi" => "", "Jeudi" => "", "Vendredi" => "Projet Tutoré"]
+];
+function getCoursClass($cours) {
+    if (strpos($cours, 'PAUSE') !== false) return 'cours-pause';
+    if (strpos($cours, '(CM)') !== false) return 'cours-cm';
+    if (strpos($cours, '(TD)') !== false) return 'cours-td';
+    if (strpos($cours, '(TP)') !== false) return 'cours-tp';
+    return '';
+}
 
 ?>
 <!DOCTYPE html>
@@ -133,6 +137,18 @@ $taux_presence = ($total > 0) ? round(($presents / $total) * 100) : 0;
         .summary-item .absent { color: var(--absent-color); }
         .summary-item .rate { color: var(--primary-color); }
 
+        /* --- Styles Emploi du Temps --- */
+        .timetable-card { grid-column: 1 / -1; /* Prend toute la largeur de la grille */ }
+        .timetable-card h2 { text-align: center; }
+        .timetable-card table { font-size: 0.9em; }
+        .timetable-card th, .timetable-card td { padding: 10px; }
+        .timetable-card th { background-color: rgba(212, 175, 55, 0.1); color: var(--primary-color); }
+        .timetable-card td:first-child { font-weight: bold; background-color: rgba(255,255,255,0.05); }
+        .cours-cm { background-color: rgba(40, 167, 69, 0.3); color: #a7e0b6; font-weight: bold; }
+        .cours-td { background-color: rgba(23, 162, 184, 0.3); color: #9eeaf9; }
+        .cours-tp { background-color: rgba(255, 193, 7, 0.3); color: #ffeeba; }
+        .cours-pause { background-color: rgba(108, 117, 125, 0.2); color: #888; font-style: italic; }
+
         #graph-container { height: 250px; }
 
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
@@ -164,8 +180,86 @@ $taux_presence = ($total > 0) ? round(($presents / $total) * 100) : 0;
             border-top: 1px solid var(--glass-border);
         }
     </style>
+    <style>
+        /* --- Styles du Menu --- */
+        .main-nav {
+            background: var(--glass-bg);
+            border-bottom: 1px solid var(--glass-border);
+            padding: 0 20px;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        .main-nav ul {
+            display: flex;
+            justify-content: center;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+        .main-nav a {
+            display: block;
+            padding: 20px;
+            color: var(--text-color);
+            text-decoration: none;
+            font-family: 'Montserrat', sans-serif;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        .main-nav a:hover, .main-nav a.active {
+            color: var(--primary-color);
+        }
+        .main-nav a.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 10px;
+            right: 10px;
+            height: 3px;
+            background: var(--primary-color);
+            border-radius: 3px;
+        }
+        .main-nav i { margin-right: 8px; }
+
+        /* --- Styles de la Modale --- */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); display: none; justify-content: center; align-items: center; z-index: 2000; backdrop-filter: blur(5px); }
+        .modal-content { background: var(--glass-bg); padding: 40px; border-radius: 15px; border: 1px solid var(--glass-border); text-align: center; position: relative; width: 90%; max-width: 400px; }
+        .modal-close { position: absolute; top: 15px; right: 20px; color: #fff; font-size: 30px; font-weight: bold; cursor: pointer; transition: color 0.2s; }
+        .modal-close:hover { color: var(--primary-color); }
+        .modal-content h3 { font-family: 'Montserrat', sans-serif; color: var(--primary-color); font-size: 1.8rem; margin-top: 0; margin-bottom: 20px; text-transform: capitalize; }
+
+        /* --- Styles Photo 3D --- */
+        .photo-container { perspective: 1000px; }
+        .emoji-3d {
+            width: 250px;
+            height: 250px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            transition: transform 0.1s ease-out;
+            border: 3px solid var(--primary-color);
+            /* Nouveaux styles pour l'emoji */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 150px; /* Grande taille pour l'emoji */
+            background: rgba(255, 255, 255, 0.05); /* Léger fond pour voir la boîte */
+        }
+
+        /* Rendre le nom de l'élève cliquable */
+        .eleve-name { cursor: pointer; transition: color 0.2s; }
+        .eleve-name:hover { color: var(--primary-color); }
+    </style>
 </head>
 <body>
+
+    <nav class="main-nav">
+        <ul>
+            <li><a href="index03.php" class="active"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+            <li><a href="presence.php"><i class="fas fa-user-check"></i> Présence</a></li>
+        </ul>
+    </nav>
 
     <div class="container">
         <header>
@@ -186,36 +280,33 @@ $taux_presence = ($total > 0) ? round(($presents / $total) * 100) : 0;
                     <h2>Répartition Graphique</h2>
                     <div id="graph-container"><canvas id="presenceChart"></canvas></div>
                 </div>
-            </div>
 
-            <div class="card">
-                <h2>Liste des Élèves</h2>
-                <table>
-                    <thead>
-                        <tr><th>Élève</th><th>Statut Actuel</th><th>Mettre à Jour</th></tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($eleves as $eleve): ?>
+                <div class="card timetable-card">
+                    <h2><i class="fas fa-calendar-alt"></i> Emploi du Temps - L1 Informatique</h2>
+                    <table>
+                        <thead>
                             <tr>
-                                <td><?php echo htmlspecialchars(ucfirst(trim($eleve))); ?></td>
-                                <td>
-                                    <?php
-                                        $statut = $statuts[$eleve];
-                                        $class = ($statut == 'Présent') ? 'status-present' : 'status-absent';
-                                        echo "<span class='status $class'>$statut</span>";
-                                    ?>
-                                </td>
-                                <td class="actions">
-                                    <a href="?eleve=<?php echo urlencode($eleve); ?>&action=present" class="btn-present">Présent</a>
-                                    <a href="?eleve=<?php echo urlencode($eleve); ?>&action=absent" class="btn-absent">Absent</a>
-                                </td>
+                                <th>Heure</th>
+                                <?php foreach ($jours as $jour) echo "<th>$jour</th>"; ?>
                             </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($creneaux as $heure): ?>
+                            <tr>
+                                <td><?php echo $heure; ?></td>
+                                <?php foreach ($jours as $jour): ?>
+                                    <?php
+                                        $cours = $planning[$heure][$jour] ?? "";
+                                        $class = getCoursClass($cours);
+                                    ?>
+                                    <td class='<?php echo $class; ?>'><?php echo $cours; ?></td>
+                                <?php endforeach; ?>
+                            </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
             </div>
-
-            <a href="?reset=true" class="btn-reset">Réinitialiser la journée</a>
         </main>
     </div>
 
