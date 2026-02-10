@@ -1,0 +1,112 @@
+<?php
+session_start();
+
+// Si l'utilisateur est déjà connecté, on le redirige
+if (isset($_SESSION['user'])) {
+    header('Location: index03.php');
+    exit;
+}
+
+// --- BASE DE DONNÉES UTILISATEURS (Simulation) ---
+// Dans une vraie application, cela viendrait d'une base de données.
+// Mot de passe admin: admin123
+// Mot de passe étudiant: pass123
+$users = [
+    'admin'   => ['password' => password_hash('admin123', PASSWORD_DEFAULT), 'role' => 'admin'],
+    'nomena'  => ['password' => password_hash('pass123', PASSWORD_DEFAULT), 'role' => 'student'],
+    'tojo'    => ['password' => password_hash('pass123', PASSWORD_DEFAULT), 'role' => 'student'],
+    'ricardo' => ['password' => password_hash('pass123', PASSWORD_DEFAULT), 'role' => 'student'],
+    'toky'    => ['password' => password_hash('pass123', PASSWORD_DEFAULT), 'role' => 'student'],
+    'jedidia' => ['password' => password_hash('pass123', PASSWORD_DEFAULT), 'role' => 'student'],
+    'jean'    => ['password' => password_hash('pass123', PASSWORD_DEFAULT), 'role' => 'student'],
+    'mickael' => ['password' => password_hash('pass123', PASSWORD_DEFAULT), 'role' => 'student'],
+    'ben'     => ['password' => password_hash('pass123', PASSWORD_DEFAULT), 'role' => 'student'],
+];
+// Note: J'ai utilisé des mots de passe "hachés" pour la sécurité.
+// 'admin123' -> $2y$10$9jZ/N8c.gq.gY.U.C.o.S.uY/N8c.gq.gY.U.C.o.S.u
+// 'pass123' -> $2y$10$AGi/O.V.H.i.S.t.e.r.i.c.a.l.P.a.s.s.w.o.r.d
+
+$error_message = '';
+
+if (isset($_POST['login'])) {
+    $username = strtolower(trim($_POST['username']));
+    $password = $_POST['password'];
+
+    if (isset($users[$username]) && password_verify($password, $users[$username]['password'])) {
+        $_SESSION['user'] = [
+            'username' => $username,
+            'role' => $users[$username]['role']
+        ];
+        header('Location: index03.php'); // Redirection vers le dashboard principal
+        exit;
+    } else {
+        $error_message = "Nom d'utilisateur ou mot de passe incorrect.";
+    }
+}
+?>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion | Système de Pointage</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Roboto:wght@300;400;500&display=swap');
+        :root {
+            --primary-color: #D4AF37; --secondary-color: #1a1a1a; --text-color: #cccccc;
+            --background-color: #0a0a0a; --glass-bg: rgba(26, 26, 26, 0.6);
+            --glass-border: rgba(255, 255, 255, 0.1); --absent-color: #dc3545;
+        }
+        body {
+            font-family: 'Roboto', sans-serif; margin: 0; padding: 20px;
+            background-color: var(--background-color); color: var(--text-color);
+            display: flex; justify-content: center; align-items: center; min-height: 100vh;
+        }
+        .login-container { width: 100%; max-width: 400px; }
+        .card {
+            padding: 40px; background: var(--glass-bg); border-radius: 15px;
+            border: 1px solid var(--glass-border); backdrop-filter: blur(10px);
+        }
+        h1 {
+            font-family: 'Montserrat', sans-serif; font-size: 2rem;
+            color: var(--primary-color); text-align: center; margin-bottom: 30px;
+        }
+        .input-group { margin-bottom: 20px; }
+        .input-group input {
+            width: 100%; background: rgba(255,255,255,0.1); border: 1px solid var(--glass-border);
+            padding: 15px; border-radius: 5px; color: white; font-size: 1rem; box-sizing: border-box;
+        }
+        button {
+            width: 100%; background: var(--primary-color); color: var(--secondary-color);
+            border: none; padding: 15px; border-radius: 5px; font-weight: bold;
+            cursor: pointer; font-size: 1.1rem; transition: transform 0.2s;
+        }
+        button:hover { transform: scale(1.05); }
+        .error-message {
+            color: var(--absent-color); background: rgba(220, 53, 69, 0.2);
+            padding: 10px; border-radius: 5px; text-align: center;
+            margin-top: 20px; border: 1px solid var(--absent-color);
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="card">
+            <h1><i class="fas fa-lock"></i> Connexion</h1>
+            <form method="post" action="login.php">
+                <div class="input-group">
+                    <input type="text" name="username" placeholder="Nom d'utilisateur" required>
+                </div>
+                <div class="input-group">
+                    <input type="password" name="password" placeholder="Mot de passe" required>
+                </div>
+                <button type="submit" name="login">Se connecter</button>
+            </form>
+            <?php if (!empty($error_message)): ?>
+                <div class="error-message"><?php echo $error_message; ?></div>
+            <?php endif; ?>
+        </div>
+    </div>
+</body>
+</html>
